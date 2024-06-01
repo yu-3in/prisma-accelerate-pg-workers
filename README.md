@@ -16,7 +16,35 @@ PostgreSQL に対応しています。
 PRISMA_ACCELERATE_SECRET=your_prisma_accelerate_secret
 ```
 
-`your_prisma_accelerate_secret` は、次項の `npx prisma-accelerate-local` の `--secret` オプションで指定します。
+続いて Cloudflare 側にも環境変数を反映するため、次のコマンドを実行します。
+入力が求められるので、上と同じ値を入力してください。
+
+```bash
+npx wrangler secret put PRISMA_ACCELERATE_SECRET
+```
+
+`your_prisma_accelerate_secret` は、[API_kEY を生成する](#api_key-を生成する)で使用します。
+
+## Cloudflare KV を作成する
+
+Cloudflare のダッシュボードに移動します。
+左メニューから `Workers & Pages` を選択し、配下の `KV` を選択します。
+
+このような画面に遷移するので、右側の `Create Namespace` をクリックします。
+![Cloudflare KVのダッシュボード画面](https://storage.googleapis.com/zenn-user-upload/21eafe761175-20240601.png)
+
+`Namespace Name` には識別しやすい名前を設定します。ここでは、`prisma-accelerate-pg-workers` とします。入力したら `Add` をクリックします。
+作成された KV の ID を控えておきます。
+
+![](https://storage.googleapis.com/zenn-user-upload/22c9497ddb36-20240601.png)
+
+つづいて`wrangler.toml` を開き、次の箇所の `id` を先ほど控えた KV の ID に書き換えます。
+
+```
+[[kv_namespaces]]
+binding = "KV"
+id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+```
 
 ## API_KEY を生成する
 
@@ -34,7 +62,7 @@ npx prisma-accelerate-local --secret enter_your_secret --make postgres://xxx
 DATABASE_URL=prisma://xxxx.workers.dev?api_key=your_api_key
 ```
 
-URL のスキーマが `prisma` であること、ホストが `xxxx.workers.dev` であること、クエリパラメータに `api_key` が含まれていることを確認してください。
+URL のスキーマが `prisma` であること、ホストが `xxxx.workers.dev` であること、クエリパラメータに `api_key`
 
 # デプロイ
 
